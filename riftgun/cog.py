@@ -70,7 +70,7 @@ class RiftGun(commands.Cog):
         }
         self.save()
         if notify:
-            await target.send("\N{cinema} A rift has opened in this channel!")
+            self.bot.loop.create_task(target.send("\N{cinema} A rift has opened in this channel!"))
         return
 
     @commands.command(name="rifts", aliases=['r', 'openrifts'])
