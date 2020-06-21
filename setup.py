@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='riftgun',
-    version='0.2',
+    version='0.3',
     packages=['riftgun'],
     long_description=open("README.md").read(),
     url='https://github.com/dragdev-studios/RiftGun',

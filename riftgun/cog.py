@@ -3,7 +3,6 @@ from typing import Optional, Union
 
 import discord
 import sys
-import io
 
 from discord.ext import commands
 from .converters import GlobalTextChannel
@@ -24,14 +23,15 @@ def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", fi
     file.write("[RiftGun] " + sep.join(str(v) for v in values) + end)
     return ''
 
-def rift_admin(ctx: commands.Context):
-    if not ctx.guild:
-        raise commands.NoPrivateMessage()
-    else:
-        if not ctx.channel.permissions_for(ctx.author).manage_roles:
-            raise commands.MissingPermissions("manage_roles")
-        else:
-            return True
+# def rift_admin(ctx: commands.Context):
+#     if not ctx.guild:
+#         raise commands.NoPrivateMessage()
+#     else:
+#         if not ctx.channel.permissions_for(ctx.author).manage_roles:
+#             raise commands.MissingPermissions("manage_roles")
+#         else:
+#             return True
+# May come back into use later?
 
 
 class RiftGun(commands.Cog):
@@ -46,7 +46,8 @@ class RiftGun(commands.Cog):
             print("Loaded data from existing data file.")
             self.data = data
         except (FileNotFoundError, json.JSONDecodeError):
-            print("No existing file, or corrupted entries, defaulting to nothing.")
+            print("No existing file, or corrupted entries, defaulting to nothing. A new file will be created on cog"
+                  " unload or command usage.", file=sys.stderr)
             self.data = {}
 
     def cog_unload(self):
@@ -78,7 +79,7 @@ class RiftGun(commands.Cog):
         """Shows all valid, open rifts."""
         y, n = "\N{white heavy check mark}", "\N{cross mark}"
         pag = commands.Paginator()
-        for channel_id, webhook_url in self.data.items():
+        for channel_id, _ in self.data.items():
             ic = int(channel_id)
             channel = self.bot.get_channel(ic)
 
