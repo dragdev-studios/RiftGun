@@ -133,7 +133,11 @@ class RiftGun(commands.Cog):
 
     @commands.Cog.listener(name="on_message")
     async def message(self, message: discord.Message):
+        context: commands.Context = await self.bot.get_context(message)
         if message.author == self.bot.user: return  # only ignore the current bot to prevent loops.
+        elif context.command:
+            if context.command.name == "close":
+                return
         sources = {}
         targets = {}
         sid = message.channel.id

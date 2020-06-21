@@ -2,8 +2,9 @@ from setuptools import setup
 
 setup(
     name='riftgun',
-    version='0.1',
+    version='0.2',
     packages=['riftgun'],
+    long_description=open("README.md").read(),
     url='https://github.com/dragdev-studios/RiftGun',
     license='Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Public License',
     author='EEKIM10',
