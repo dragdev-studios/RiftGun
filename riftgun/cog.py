@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Optional, Union
 
 import discord
 import sys
@@ -114,6 +114,23 @@ class RiftGun(commands.Cog):
         self.add_rift(ctx.channel, channel, notify)
         return await ctx.send(f"\N{white heavy check mark} Opened a rift in #{channel.name}.")
 
+    @commands.command(name="close", aliases=['closerift', 'cf'])
+    async def close_rift(self, ctx: commands.Context, notify: Optional[bool]=True, *,
+                         target: Union[GlobalTextChannel(), int]):
+        """Closes a rift.
+
+        This command takes the same arguments as [p]openrift.
+        If the bot can no longer see the rift channel, you can provide the ID instead and it will still be deleted"""
+        if notify and target.permissions_for(target.guild.me).send_messages and isinstance(target, discord.TextChannel):
+            await target.send("\U00002601\U0000fe0f The rift collapsed!")
+
+        if isinstance(target, int):
+            del self.data[str(target)]
+        else:
+            del self.data[str(target.id)]
+        self.save()
+        return await ctx.send(f"\N{white heavy check mark} Closed the rift for {target}.")
+
     @commands.Cog.listener(name="on_message")
     async def message(self, message: discord.Message):
         if message.author == self.bot.user: return  # only ignore the current bot to prevent loops.
@@ -123,7 +140,6 @@ class RiftGun(commands.Cog):
 
         for target, source in self.data.items():
             sources[int(source["source"])] = int(target)
-
             targets[int(target)] = int(source["source"])
 
         if sid in sources.keys():
