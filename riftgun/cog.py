@@ -59,7 +59,7 @@ class RiftGun(commands.Cog):
             json.dump(self.data, wfile)
 
     async def cog_check(self, ctx):
-        if not self.bot.is_owner(ctx.author): raise commands.NotOwner()
+        if not await self.bot.is_owner(ctx.author): raise commands.NotOwner()
         else: return True
 
     def add_rift(self, source: discord.TextChannel, target: discord.TextChannel, notify: bool = True):
