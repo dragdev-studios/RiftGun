@@ -9,7 +9,7 @@ from discord.ext import commands
 from .converters import GlobalTextChannel
 
 
-def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", file: Optional[io.StringIO]=sys.stdout,
+def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", file=sys.stdout,
           flush: bool = False):
     """
     print(value, ..., sep=' ', end='\n', file=sys.stdout, flush=False)
@@ -116,23 +116,31 @@ class RiftGun(commands.Cog):
 
     @commands.Cog.listener(name="on_message")
     async def message(self, message: discord.Message):
+        if message.author == self.bot.user: return  # only ignore the current bot to prevent loops.
         sources = {}
         targets = {}
         sid = message.channel.id
 
         for target, source in self.data.items():
             sources[int(source["source"])] = int(target)
+
             targets[int(target)] = int(source["source"])
 
         if sid in sources.keys():
             channel = self.bot.get_channel(sources[sid])
             attachments = [a.to_file() for a in message.attachments]
             await channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                               embeds=message.embeds or None,
+                               embed=message.embeds[0] if message.embeds else None,
                                files=attachments or None)
         elif sid in targets.keys():
             channel = self.bot.get_channel(targets[sid])
             attachments = [a.to_file() for a in message.attachments]
             await channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                               embeds=message.embeds or None,
+                               embed=message.embeds[0] if message.embeds else None,
                                files=attachments or None)
+
+    async def cog_command_error(self, ctx, error):
+        error = getattr(error, "original", error)
+        print(f"Exception raised in command {ctx.command}:", error, error.__traceback__, file=sys.stderr)
+        return await ctx.send(f"\N{cross mark} an error was raised, and printed to console. If the issue persists,"
+                              f" please open an issue on github (<https://github.com/dragdev-studios/RiftGun/issues/new>)")
