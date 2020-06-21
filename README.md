@@ -1,5 +1,5 @@
 ## RIFTGUN
-*A new module for doing sneaky sh\*t on discord bots*
+*A new module for providing remote support on discord bots*
 
 ### What is it?
 *RiftGun*, commonly known as "Rifter", is a python module that
@@ -8,7 +8,8 @@ you can load into your discord bots to spy on channels.
 ####I DO NOT CONDONE USE OF THIS FOR PRIVACY INVASION, OR UNETHICAL USES!
 This module was designed as an easy way for us to remotely provide 
 support and investigate servers that we thought broke DragDev Studios'
-terms of service.
+terms of service. While we can't stop you, we advise you don't use this 
+to do any "spying" or otherwise indecent operations
 
 ---
 ### Installation:

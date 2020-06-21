@@ -6,6 +6,7 @@ import sys
 import io
 
 from discord.ext import commands
+from .converters import GlobalTextChannel
 
 
 def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", file: Optional[io.StringIO]=sys.stdout,
@@ -53,9 +54,24 @@ class RiftGun(commands.Cog):
             json.dump(self.data, wfile)
         print("Saved data and unloaded module")
 
+    def save(self):
+        with open("./rifts.min.json", "w+") as wfile:
+            json.dump(self.data, wfile)
+
     async def cog_check(self, ctx):
         if not self.bot.is_owner(ctx.author): raise commands.NotOwner()
         else: return True
+
+    def add_rift(self, source: discord.TextChannel, target: discord.TextChannel, notify: bool = True):
+        self.data[str(target.id)] = {
+            "source": source.id,
+            "target": target.id,
+            "notify": notify
+        }
+        self.save()
+        if notify:
+            await target.send("\N{cinema} A rift has opened in this channel!")
+        return
 
     @commands.command(name="rifts", aliases=['r', 'openrifts'])
     async def open_rifts(self, ctx: commands.Context):
@@ -78,3 +94,45 @@ class RiftGun(commands.Cog):
                 pag.add_line(f"{y} {channel.name} - {channel.guild.id}")
         for page in pag.pages:
             await ctx.send(page)
+
+    @commands.command(name="open", aliases=['openrift', 'or'])
+    async def open_rift(self, ctx: commands.Context, notify: Optional[bool]=True, *, channel: GlobalTextChannel()):
+        """Opens a rift into a channel.
+
+        This will notify the channel that a rift has been opened.
+        ---
+        Notify - bool: Whether to send a notification to the channel the rift is opening in that it has opened
+        Channel - GlobalChannel: What channel to open the rift in."""
+        if channel == ctx.channel:
+            return await ctx.send("\N{cross mark} You can't open a rift in this channel.")
+
+        channel: discord.TextChannel
+        p = channel.permissions_for(channel.guild.me)
+        if not all([p.read_messages, p.send_messages]):
+            return await ctx.send("\N{cross mark} Insufficient permissions to access that channel.")
+
+        self.add_rift(ctx.channel, channel, notify)
+        return await ctx.send(f"\N{white heavy check mark} Opened a rift in #{channel.name}.")
+
+    @commands.Cog.listener(name="on_message")
+    async def message(self, message: discord.Message):
+        sources = {}
+        targets = {}
+        sid = message.channel.id
+
+        for target, source in self.data.items():
+            sources[int(source["source"])] = int(target)
+            targets[int(target)] = int(source["source"])
+
+        if sid in sources.keys():
+            channel = self.bot.get_channel(sources[sid])
+            attachments = [a.to_file() for a in message.attachments]
+            await channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
+                               embeds=message.embeds or None,
+                               files=attachments or None)
+        elif sid in targets.keys():
+            channel = self.bot.get_channel(targets[sid])
+            attachments = [a.to_file() for a in message.attachments]
+            await channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
+                               embeds=message.embeds or None,
+                               files=attachments or None)
