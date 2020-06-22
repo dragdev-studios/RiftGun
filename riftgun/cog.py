@@ -181,12 +181,13 @@ class RiftGun(commands.Cog):
         channel: discord.TextChannel
         nsfw = channel.is_nsfw()
         ago = channel.created_at.strftime("%c") + " " + humanize.naturaltime(channel.created_at)
+        perms = channel.permissions_for(channel.guild.me).value
         e = discord.Embed(
             title=f"Name: {channel.name}",
             description="ID: `{0.id}`\nGuild: {0.guild.name} (`{0.guild.id}`)\nCategory: {0.category}\n"
                         "Slowmode: {0.slowmode_delay}\nNSFW: {1}\nCreated at: {2}\n"
-                        "[Permissions Value]({3}): {0.permissions_for(channel.guild.me).value}".format(
-                channel, nsfw, ago, "google.com"),
+                        "[Permissions Value]({3}): {4}".format(
+                channel, nsfw, ago, "google.com", str(perms)),
             color=channel.guild.owner.color,
             timestamp=channel.created_at
         )
