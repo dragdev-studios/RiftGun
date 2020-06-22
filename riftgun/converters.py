@@ -22,11 +22,12 @@ class GlobalTextChannel(commands.Converter):
             if channel.id == argument:
                 return True
             else:
-                if channel.name.lower() == argument.lower():
+                arg = str(argument)
+                if channel.name.lower() == str(arg).lower():
                     return True
-                elif channel.name in argument:
+                elif channel.name in arg:
                     return True
-                elif argument in channel.name:
+                elif arg in channel.name:
                     return True
 
         channel = discord.utils.find(match, sorted(list(ctx.bot.get_all_channels()), key=lambda x: x.id))
@@ -43,11 +44,12 @@ class GlobalTextChannel(commands.Converter):
             if channel.id == argument:
                 return True
             else:
-                if channel.name.lower() == argument.lower():
+                arg = str(argument)
+                if channel.name.lower() == str(arg).lower():
                     return True
-                elif channel.name in argument:
+                elif channel.name in arg:
                     return True
-                elif argument in channel.name:
+                elif arg in channel.name:
                     return True
 
         channel = discord.utils.find(match, sorted(list(ctx.bot.get_all_channels()), key=lambda x: x.id))
