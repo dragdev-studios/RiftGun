@@ -117,13 +117,15 @@ class RiftGun(commands.Cog):
 
     @commands.command(name="close", aliases=['closerift', 'cf'])
     async def close_rift(self, ctx: commands.Context, notify: Optional[bool]=True, *,
-                         target: Union[GlobalTextChannel(), int]):
+                         target: Union[GlobalTextChannel, int]):
         """Closes a rift.
 
         This command takes the same arguments as [p]openrift.
         If the bot can no longer see the rift channel, you can provide the ID instead and it will still be deleted"""
-        if notify and target.permissions_for(target.guild.me).send_messages and isinstance(target, discord.TextChannel):
-            await target.send("\U00002601\U0000fe0f The rift collapsed!")
+        if not isinstance(target, int):
+            target: discord.TextChannel
+            if notify and target.permissions_for(target.guild.me).send_messages:
+                await target.send("\U00002601\U0000fe0f The rift collapsed!")
 
         if isinstance(target, int):
             del self.data[str(target)]
