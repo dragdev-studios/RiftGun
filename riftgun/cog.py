@@ -108,6 +108,9 @@ class RiftGun(commands.Cog):
         if channel == ctx.channel:
             return await ctx.send("\N{cross mark} You can't open a rift in this channel.")
 
+        if self.data.get(str(channel.id)):
+            return await ctx.send("\N{cross mark} You are already rifting to that channel!")
+
         channel: discord.TextChannel
         p = channel.permissions_for(channel.guild.me)
         if not all([p.read_messages, p.send_messages]):
@@ -129,9 +132,15 @@ class RiftGun(commands.Cog):
                 await target.send("\U00002601\U0000fe0f The rift collapsed!")
 
         if isinstance(target, int):
-            del self.data[str(target)]
+            if self.data.get(str(target)):
+                del self.data[str(target)]
+            else:
+                return await ctx.send(f"\N{cross mark} That channel doesn't have an open rift.")
         else:
-            del self.data[str(target.id)]
+            if self.data.get(str(target.id)):
+                del self.data[str(target.id)]
+            else:
+                return await ctx.send(f"\N{cross mark} That channel doesn't have an open rift.")
         self.save()
         return await ctx.send(f"\N{white heavy check mark} Closed the rift for {target}.")
 
@@ -175,7 +184,9 @@ class RiftGun(commands.Cog):
         e = discord.Embed(
             title=f"Name: {channel.name}",
             description="ID: `{0.id}`\nGuild: {0.guild.name} (`{0.guild.id}`)\nCategory: {0.category}\n"
-                        "Slowmode: {0.slowmode_delay}\nNSFW: {1}\nCreated at: {2}".format(channel, nsfw, ago),
+                        "Slowmode: {0.slowmode_delay}\nNSFW: {1}\nCreated at: {2}\n"
+                        "[Permissions Value]({3}): {0.permissions_for(channel.guild.me).value}".format(
+                channel, nsfw, ago, "google.com"),
             color=channel.guild.owner.color,
             timestamp=channel.created_at
         )
