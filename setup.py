@@ -5,6 +5,7 @@ setup(
     version='0.3',
     packages=['riftgun'],
     long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     url='https://github.com/dragdev-studios/RiftGun',
     license='Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Public License',
     author='EEKIM10',
