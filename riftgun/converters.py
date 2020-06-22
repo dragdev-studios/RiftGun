@@ -29,7 +29,7 @@ class GlobalTextChannel(commands.Converter):
                 elif argument in channel.name:
                     return True
 
-        channel = discord.utils.find(match, sorted(list(ctx.bot.get_all_channels()), key=lambda x: x.last_message))
+        channel = discord.utils.find(match, sorted(list(ctx.bot.get_all_channels()), key=lambda x: x.id))
 
         if channel: return channel
         else: raise commands.BadArgument(f"Unable to convert \"{argument}\" to TextChannel, globally or locally.")
@@ -50,7 +50,7 @@ class GlobalTextChannel(commands.Converter):
                 elif argument in channel.name:
                     return True
 
-        channel = discord.utils.find(match, sorted(list(ctx.bot.get_all_channels()), key=lambda x: x.last_message))
+        channel = discord.utils.find(match, sorted(list(ctx.bot.get_all_channels()), key=lambda x: x.id))
 
         if channel: return channel
         else: raise commands.BadArgument(f"Unable to convert \"{argument}\" to TextChannel, globally or locally.")
