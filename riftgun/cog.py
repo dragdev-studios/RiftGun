@@ -74,7 +74,7 @@ class RiftGun(commands.Cog):
             self.bot.loop.create_task(target.send("\N{cinema} A rift has opened in this channel!"))
         return
 
-    @commands.command(name="rifts", aliases=['r', 'openrifts'])
+    @commands.command(name="rifts", aliases=['openrifts'])
     async def open_rifts(self, ctx: commands.Context):
         """Shows all valid, open rifts."""
         y, n = "\N{white heavy check mark}", "\N{cross mark}"
