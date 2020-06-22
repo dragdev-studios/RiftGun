@@ -162,8 +162,23 @@ class RiftGun(commands.Cog):
                                embed=message.embeds[0] if message.embeds else None,
                                files=attachments or None)
 
+    @commands.command(name="channelinfo", aliases=['ci', 'chaninfo', 'cinfo'])
+    async def channel_info(self, ctx: commands.Context, *, channel: GlobalTextChannel()):
+        """Shows you information on a channel before you open a rift in it
+
+        This should be used to make sure you got the right channel before opening."""
+        e = discord.Embed(
+            title=f"Name: {channel.name}",
+            description="ID: `{.id}`\nGuild: {.guild.name} (`{.guild.id}`)\nCategory: {.category}\n"
+                        "Slowmode: {.slowmode_delay}\nNSFW: {.is_nsfw()}",
+            color=channel.guild.owner.color
+        )
+        return await ctx.send(embed=e)
+
     async def cog_command_error(self, ctx, error):
         error = getattr(error, "original", error)
+        if isinstance(error, commands.BadArgument):
+            return await ctx.send(f"Argument conversion error (an invalid argument was passed): `{error}`")
         print(f"Exception raised in command {ctx.command}:", error, error.__traceback__, file=sys.stderr)
         return await ctx.send(f"\N{cross mark} an error was raised, and printed to console. If the issue persists,"
                               f" please open an issue on github (<https://github.com/dragdev-studios/RiftGun/issues/new>)")

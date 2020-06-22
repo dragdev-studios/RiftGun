@@ -8,7 +8,6 @@ class GlobalTextChannel(commands.Converter):
     def __init__(self, *, sort_by_last_message: bool = True):
         self.sblm = sort_by_last_message
 
-
     async def convert(self, ctx, argument: str) -> discord.TextChannel:
         """Converts a provided argument to a text channel."""
         try:
