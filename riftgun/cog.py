@@ -169,8 +169,8 @@ class RiftGun(commands.Cog):
         This should be used to make sure you got the right channel before opening."""
         e = discord.Embed(
             title=f"Name: {channel.name}",
-            description="ID: `{.id}`\nGuild: {.guild.name} (`{.guild.id}`)\nCategory: {.category}\n"
-                        "Slowmode: {.slowmode_delay}\nNSFW: {.is_nsfw()}",
+            description="ID: `{0.id}`\nGuild: {0.guild.name} (`{0.guild.id}`)\nCategory: {0.category}\n"
+                        "Slowmode: {0.slowmode_delay}\nNSFW: {0.is_nsfw()}".format(channel),
             color=channel.guild.owner.color
         )
         return await ctx.send(embed=e)
