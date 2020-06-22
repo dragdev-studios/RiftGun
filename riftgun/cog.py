@@ -1,11 +1,11 @@
 import json
+import sys
 from typing import Optional, Union
 
 import discord
-import sys
-
 import humanize
 from discord.ext import commands
+
 from .converters import GlobalTextChannel
 
 
@@ -174,7 +174,8 @@ class RiftGun(commands.Cog):
             title=f"Name: {channel.name}",
             description="ID: `{0.id}`\nGuild: {0.guild.name} (`{0.guild.id}`)\nCategory: {0.category}\n"
                         "Slowmode: {0.slowmode_delay}\nNSFW: {1}\nCreated at: {2}".format(channel, nsfw, ago),
-            color=channel.guild.owner.color
+            color=channel.guild.owner.color,
+            timestamp=channel.created_at
         )
         return await ctx.send(embed=e)
 
