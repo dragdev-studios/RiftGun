@@ -4,6 +4,7 @@ from typing import Optional, Union
 import discord
 import sys
 
+import humanize
 from discord.ext import commands
 from .converters import GlobalTextChannel
 
@@ -167,10 +168,12 @@ class RiftGun(commands.Cog):
         """Shows you information on a channel before you open a rift in it
 
         This should be used to make sure you got the right channel before opening."""
+        nsfw = channel.is_nsfw()
+        ago = channel.created_at.strftime("%c") + " " + humanize.naturaltime(channel.created_at)
         e = discord.Embed(
             title=f"Name: {channel.name}",
             description="ID: `{0.id}`\nGuild: {0.guild.name} (`{0.guild.id}`)\nCategory: {0.category}\n"
-                        "Slowmode: {0.slowmode_delay}\nNSFW: {0.is_nsfw()}".format(channel),
+                        "Slowmode: {0.slowmode_delay}\nNSFW: {1}\nCreated at: {2}".format(channel, nsfw, ago),
             color=channel.guild.owner.color
         )
         return await ctx.send(embed=e)
