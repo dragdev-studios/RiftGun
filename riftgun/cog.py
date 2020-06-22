@@ -138,10 +138,11 @@ class RiftGun(commands.Cog):
     @commands.Cog.listener(name="on_message")
     async def message(self, message: discord.Message):
         context: commands.Context = await self.bot.get_context(message)
-        if message.author == self.bot.user: return  # only ignore the current bot to prevent loops.
-        elif context.command:
-            if context.command.name == "close":
-                return
+        if message.author == self.bot.user:
+            return  # only ignore the current bot to prevent loops.
+        elif context.valid:
+            return
+
         sources = {}
         targets = {}
         sid = message.channel.id
@@ -168,6 +169,7 @@ class RiftGun(commands.Cog):
         """Shows you information on a channel before you open a rift in it
 
         This should be used to make sure you got the right channel before opening."""
+        channel: discord.TextChannel
         nsfw = channel.is_nsfw()
         ago = channel.created_at.strftime("%c") + " " + humanize.naturaltime(channel.created_at)
         e = discord.Embed(
@@ -183,6 +185,8 @@ class RiftGun(commands.Cog):
         error = getattr(error, "original", error)
         if isinstance(error, commands.BadArgument):
             return await ctx.send(f"Argument conversion error (an invalid argument was passed): `{error}`")
+        elif isinstance(error, commands.MissingRequiredArgument):
+            return await ctx.send(str(error))
         print(f"Exception raised in command {ctx.command}:", error, error.__traceback__, file=sys.stderr)
         return await ctx.send(f"\N{cross mark} an error was raised, and printed to console. If the issue persists,"
                               f" please open an issue on github (<https://github.com/dragdev-studios/RiftGun/issues/new>)")
