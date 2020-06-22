@@ -18,7 +18,7 @@ class GlobalTextChannel(commands.Converter):
 
         if argument.isdigit(): argument = int(argument)
 
-        def match(channel: typing.Union[discord.TextChannel, discord.VoiceChannel, discord.CategoryChannel]):
+        def match(channel: discord.TextChannel):
             if channel.id == argument:
                 return True
             else:
@@ -29,7 +29,7 @@ class GlobalTextChannel(commands.Converter):
                 elif argument in channel.name:
                     return True
 
-        channel = discord.utils.find(match, sorted(ctx.bot.channels, key=lambda x: x.last_message))
+        channel = discord.utils.find(match, sorted(ctx.bot.text_channels, key=lambda x: x.last_message))
 
         if channel: return channel
         else: raise commands.BadArgument(f"Unable to convert \"{argument}\" to TextChannel, globally or locally.")
