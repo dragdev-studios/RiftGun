@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import sys
+import traceback
 from typing import Optional, Union
 
 import discord
@@ -198,19 +199,28 @@ class RiftGun(commands.Cog):
     @commands.command(name="channels")
     async def channels(self, ctx: commands.Context, *, guild: GuildConverter()):
         """Lists every channel that is in {guild}."""
-        p = commands.Paginator("", "", 2048)
-        for channel in guild.channels:
-            prepre = "| " if getattr(channel, "category", None) else ""
-            types = {
-                discord.CategoryChannel: ", ",
-                discord.TextChannel: "#",
-                discord.VoiceChannel: "<"
-            }
-            p.add_line(f"{prepre}{types[type(channel)]}{channel.name}")
+        guild: discord.Guild
+        types = {
+            discord.CategoryChannel: ", ",
+            discord.TextChannel: "#",
+            discord.VoiceChannel: "\U0001f508"
+        }
+        p = commands.Paginator(max_size=2048)
+        for category, channels in guild.by_category():
+            if not category:
+                for channel in channels:
+                    prepre = ""
+                    p.add_line(f"{prepre}{types[type(channel)]}{channel.name}")
+            else:
+                p.add_line(f", {category.name}")
+                for channel in channels:
+                    prepre = "| "
+                    p.add_line(f"{prepre}{types[type(channel)]}{channel.name}")
+            p.add_line(empty=True)
 
         for page in p.pages:
-            await ctx.send(
-                discord.utils.escape_mentions(page))  # would use allowed_mentions, but since this is designed
+            await ctx.send(embed=discord.Embed(description=discord.utils.escape_mentions(
+                page)))  # would use allowed_mentions, but since this is designed
             # to work with >=1.2.5, can't do that sadly.
             await asyncio.sleep(1)
 
@@ -227,7 +237,9 @@ class RiftGun(commands.Cog):
             return await ctx.send(f"Argument conversion error (an invalid argument was passed): `{error}`")
         elif isinstance(error, commands.MissingRequiredArgument):
             return await ctx.send(str(error))
-        print(f"Exception raised in command {ctx.command}:", error, error.__traceback__, file=sys.stderr)
+
+        exc = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+        print(f"Exception raised in command {ctx.command}: {str(error)}\n{exc}", file=sys.stderr)
         print("You can turn these warnings off by setting the environment variable \"RG_EH\" to 0")
         return await ctx.send(f"\N{cross mark} an error was raised, and printed to console. If the issue persists,"
                               f" please open an issue on github (<https://github.com/dragdev-studios/RiftGun/issues/new>)")
