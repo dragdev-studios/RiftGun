@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import sys
@@ -7,7 +8,7 @@ import discord
 import humanize
 from discord.ext import commands
 
-from .converters import GlobalTextChannel
+from .converters import GlobalTextChannel, GuildConverter
 
 
 def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", file=sys.stdout,
@@ -193,6 +194,25 @@ class RiftGun(commands.Cog):
             timestamp=channel.created_at
         )
         return await ctx.send(embed=e)
+
+    @commands.command(name="channels")
+    async def channels(self, ctx: commands.Context, *, guild: GuildConverter()):
+        """Lists every channel that is in {guild}."""
+        p = commands.Paginator("", "", 2048)
+        for channel in guild.channels:
+            prepre = "| " if getattr(channel, "category", None) else ""
+            types = {
+                discord.CategoryChannel: ", ",
+                discord.TextChannel: "#",
+                discord.VoiceChannel: "<"
+            }
+            p.add_line(f"{prepre}{types[type(channel)]}{channel.name}")
+
+        for page in p.pages:
+            await ctx.send(
+                discord.utils.escape_mentions(page))  # would use allowed_mentions, but since this is designed
+            # to work with >=1.2.5, can't do that sadly.
+            await asyncio.sleep(1)
 
     async def cog_command_error(self, ctx, error):
         if os.getenv("RG_EH"):
