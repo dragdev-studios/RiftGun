@@ -54,7 +54,24 @@ class RiftGun(commands.Cog):
                   " unload or command usage.", file=sys.stderr)
             self.data = {}
 
+        self.queue = asyncio.Queue(loop=self.bot.loop)
+        self.worker = self.bot.loop.create_task(self.queue_sender())
+
+    async def queue_sender(self):
+        while True:
+            callback = await self.queue.get()
+            for i in range(6):
+                try:
+                    await callback
+                except:
+                    continue
+                else:
+                    break
+            await asyncio.sleep(1)
+            self.queue.task_done()
+
     def cog_unload(self):
+        self.worker.cancel()
         with open("./rifts.min.json", "w+") as wfile:
             json.dump(self.data, wfile)
         print("Saved data and unloaded module")
@@ -166,15 +183,15 @@ class RiftGun(commands.Cog):
         if sid in sources.keys():
             channel = self.bot.get_channel(sources[sid])
             attachments = [a.to_file() for a in message.attachments]
-            await channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                               embed=message.embeds[0] if message.embeds else None,
-                               files=attachments or None)
+            self.queue.put_nowait(channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
+                                               embed=message.embeds[0] if message.embeds else None,
+                                               files=attachments or None))
         elif sid in targets.keys():
             channel = self.bot.get_channel(targets[sid])
             attachments = [a.to_file() for a in message.attachments]
-            await channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                               embed=message.embeds[0] if message.embeds else None,
-                               files=attachments or None)
+            self.queue.put_nowait(channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
+                                               embed=message.embeds[0] if message.embeds else None,
+                                               files=attachments or None))
 
     @commands.command(name="channelinfo", aliases=['ci', 'chaninfo', 'cinfo'])
     async def channel_info(self, ctx: commands.Context, *, channel: GlobalTextChannel()):
