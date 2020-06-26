@@ -114,6 +114,8 @@ class RiftGun(commands.Cog):
                 continue
             else:
                 pag.add_line(f"{y} {channel.name} - {channel.guild.id}")
+
+        if len(pag.pages) == 0: return await ctx.send("No open rifts.")
         for page in pag.pages:
             await ctx.send(page)
 
