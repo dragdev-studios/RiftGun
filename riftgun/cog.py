@@ -244,29 +244,36 @@ class RiftGun(commands.Cog):
             # to work with >=1.2.5, can't do that sadly.
             await asyncio.sleep(1)
 
-    # @commands.command(name="server_info", aliases=['si'])
-    # async def serverinfo(self, ctx: commands.Context, *, server: GuildConverter()):
-    #     """Shows you information on a server.
-    #
-    #     If this command conflicts with your bot's command, please subclass the cog."""
-    #
-    # def _serverinfo(self, ctx: commands.Context, *, server: discord.Guild):
-    #     """The alias function for the serverinfo command. Do not override this."""
-    #     cat = len(server.categories)
-    #     tex = len(server.text_channels)
-    #     voi = len(server.voice_channels)
-    #     emo = f"{len(server.emojis)}/{server.emoji_limit}"
-    #     reg = str(server.region)
-    #     afk = humanize.naturaltime(server.afk_timeout)
-    #     fea = ', '.join(x.lower().replace("_", " ") for x in server.features)
-    #
-    #     e = discord.Embed(
-    #         title=f"Name: {server}",
-    #         description=f"**ID:** {server.id}\n**Owner:** {server.owner} (`{server.owner_id}`)\n**Categories:**"
-    #                     f" {cat}\n**Text:** {tex}\n**Voice:** {voi}\n**Emojis:** {emo}\n**Region:** `{reg}`\n"
-    #                     f"**Afk Timeout:** {afk}\n**Features:** {fea}",
-    #         color=server.owner.colour
-    #     )
+    @commands.command(name="server_info", aliases=['si', 'serverinfo'])
+    async def serverinfo(self, ctx: commands.Context, *, server: GuildConverter()):
+        """Shows you information on a server.
+
+        If this command conflicts with your bot's command, please subclass the cog."""
+        return await ctx.send(embed=self._serverinfo(ctx, server=server))
+
+    def _serverinfo(self, ctx: commands.Context, *, server: discord.Guild):
+        """The alias function for the serverinfo command. Do not override this."""
+        cat = len(server.categories)
+        tex = len(server.text_channels)
+        voi = len(server.voice_channels)
+        emo = f"{len(server.emojis)}/{server.emoji_limit}"
+        reg = str(server.region)
+        afk = humanize.naturaltime(server.afk_timeout)
+        fea = ', '.join(x.lower().replace("_", " ") for x in server.features)
+
+        bo = sum([1 for x in server.members if x.bot])
+        bo = sum([1 for x in server.members if not x.bot])
+        hu = len(server.members)
+
+        e = discord.Embed(
+            title=f"Name: {server}",
+            description=f"**ID:** {server.id}\n**Owner:** {server.owner} (`{server.owner_id}`)\n**Categories:**"
+                        f" {cat}\n**Text:** {tex}\n**Voice:** {voi}\n**Emojis:** {emo}\n**Region:** `{reg}`\n"
+                        f"**Afk Timeout:** {afk}\n**Features:** {fea}\n**Members:** `{bo}` bots, `{hu}` human,"
+                        f" {hu} total",
+            color=server.owner.colour
+        )
+        return e
 
     async def cog_command_error(self, ctx, error):
         if os.getenv("RG_EH"):
