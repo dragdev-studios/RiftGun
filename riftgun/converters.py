@@ -29,6 +29,8 @@ class GlobalTextChannel(GlobalConverter):
         if argument.isdigit(): argument = int(argument)
 
         def match(channel: discord.TextChannel):
+            if not isinstance(channel, discord.TextChannel):
+                return False
             if channel.id == argument:
                 return True
             else:
@@ -53,6 +55,8 @@ class GlobalTextChannel(GlobalConverter):
         if argument.isdigit(): argument = int(argument)
 
         def match(channel: discord.TextChannel):
+            if not isinstance(channel, discord.TextChannel):
+                return
             if channel.id == argument:
                 return True
             else:

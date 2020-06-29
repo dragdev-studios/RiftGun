@@ -18,6 +18,7 @@ class OneWayRiftGun(RiftGun):
         sources = {}
         targets = {}
         sid = message.channel.id
+        embeds = [embed for embed in message.embeds if embed.type == "rich"] or None
 
         for target, source in self.data.items():
             sources[int(source["source"])] = int(target)
@@ -27,7 +28,7 @@ class OneWayRiftGun(RiftGun):
             channel = self.bot.get_channel(targets[sid])
             attachments = [a.to_file() for a in message.attachments]
             self.queue.put_nowait(channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                                               embed=message.embeds[0] if message.embeds else None,
+                                               embed=embeds,
                                                files=attachments or None))
 
 

@@ -177,6 +177,7 @@ class RiftGun(commands.Cog):
         sources = {}
         targets = {}
         sid = message.channel.id
+        embeds = [embed for embed in message.embeds if embed.type == "rich"] or None
 
         for target, source in self.data.items():
             sources[int(source["source"])] = int(target)
@@ -186,13 +187,13 @@ class RiftGun(commands.Cog):
             channel = self.bot.get_channel(sources[sid])
             attachments = [a.to_file() for a in message.attachments]
             self.queue.put_nowait(channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                                               embed=message.embeds[0] if message.embeds else None,
+                                               embed=embeds,
                                                files=attachments or None))
         elif sid in targets.keys():
             channel = self.bot.get_channel(targets[sid])
             attachments = [a.to_file() for a in message.attachments]
             self.queue.put_nowait(channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                                               embed=message.embeds[0] if message.embeds else None,
+                                               embed=embeds,
                                                files=attachments or None))
 
     @commands.command(name="channelinfo", aliases=['ci', 'chaninfo', 'cinfo'])
@@ -216,7 +217,7 @@ class RiftGun(commands.Cog):
         return await ctx.send(embed=e)
 
     @commands.command(name="channels")
-    async def channels(self, ctx: commands.Context, *, guild: GuildConverter()):
+    async def channels(self, ctx: commands.Context, use_IDs: Optional[bool] = False, *, guild: GuildConverter()):
         """Lists every channel that is in {guild}."""
         guild: discord.Guild
         types = {
@@ -229,12 +230,12 @@ class RiftGun(commands.Cog):
             if not category:
                 for channel in channels:
                     prepre = ""
-                    p.add_line(f"{prepre}{types[type(channel)]}{channel.name}")
+                    p.add_line(f"{prepre}{types[type(channel)]}{channel.name} {channel.id if use_IDs else ''}")
             else:
                 p.add_line(f", {category.name}")
                 for channel in channels:
                     prepre = "| "
-                    p.add_line(f"{prepre}{types[type(channel)]}{channel.name}")
+                    p.add_line(f"{prepre}{types[type(channel)]}{channel.name} {channel.id if use_IDs else ''}")
             p.add_line(empty=True)
 
         for page in p.pages:
@@ -242,6 +243,30 @@ class RiftGun(commands.Cog):
                 page)))  # would use allowed_mentions, but since this is designed
             # to work with >=1.2.5, can't do that sadly.
             await asyncio.sleep(1)
+
+    # @commands.command(name="server_info", aliases=['si'])
+    # async def serverinfo(self, ctx: commands.Context, *, server: GuildConverter()):
+    #     """Shows you information on a server.
+    #
+    #     If this command conflicts with your bot's command, please subclass the cog."""
+    #
+    # def _serverinfo(self, ctx: commands.Context, *, server: discord.Guild):
+    #     """The alias function for the serverinfo command. Do not override this."""
+    #     cat = len(server.categories)
+    #     tex = len(server.text_channels)
+    #     voi = len(server.voice_channels)
+    #     emo = f"{len(server.emojis)}/{server.emoji_limit}"
+    #     reg = str(server.region)
+    #     afk = humanize.naturaltime(server.afk_timeout)
+    #     fea = ', '.join(x.lower().replace("_", " ") for x in server.features)
+    #
+    #     e = discord.Embed(
+    #         title=f"Name: {server}",
+    #         description=f"**ID:** {server.id}\n**Owner:** {server.owner} (`{server.owner_id}`)\n**Categories:**"
+    #                     f" {cat}\n**Text:** {tex}\n**Voice:** {voi}\n**Emojis:** {emo}\n**Region:** `{reg}`\n"
+    #                     f"**Afk Timeout:** {afk}\n**Features:** {fea}",
+    #         color=server.owner.colour
+    #     )
 
     async def cog_command_error(self, ctx, error):
         if os.getenv("RG_EH"):
