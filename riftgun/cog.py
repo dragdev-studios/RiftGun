@@ -7,6 +7,7 @@ from typing import Optional, Union
 
 import discord
 import humanize
+import tabulate
 from discord.ext import commands
 
 from .converters import GlobalTextChannel, GuildConverter
@@ -44,8 +45,11 @@ class RiftGun(commands.Cog):
     <https://github.com/dragdev-studios/RiftGun>"""
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        if not os.path.exists("./.riftgun"):
+            print("")
+            os.mkdir("./.riftgun")
         try:
-            with open("./rifts.min.json") as rfile:
+            with open("./.riftgun/rifts.min.json") as rfile:
                 data = json.load(rfile)
             print("Loaded data from existing data file.")
             self.data = data
@@ -58,6 +62,11 @@ class RiftGun(commands.Cog):
         self.worker = self.bot.loop.create_task(self.queue_sender())
 
     async def queue_sender(self):
+        # I've got a few questions as to why this queue system even exists.
+        # I added it a while ago because, since this cog also listens for bots (by default), things can get pretty messy
+        # pretty quickly, especially if people are running lots of bot commands at once or are just active.
+        # The idea of the queue is that you will never end up being out-of-sync, while also ensuring that ratelimits
+        # are not hit.
         while True:
             callback = await self.queue.get()
             for i in range(6):
@@ -72,12 +81,12 @@ class RiftGun(commands.Cog):
 
     def cog_unload(self):
         self.worker.cancel()
-        with open("./rifts.min.json", "w+") as wfile:
+        with open("./.riftgun/rifts.min.json", "w+") as wfile:
             json.dump(self.data, wfile)
         print("Saved data and unloaded module")
 
     def save(self):
-        with open("./rifts.min.json", "w+") as wfile:
+        with open("./.riftgun/rifts.min.json", "w+") as wfile:
             json.dump(self.data, wfile)
 
     async def cog_check(self, ctx):
@@ -100,22 +109,32 @@ class RiftGun(commands.Cog):
         """Shows all valid, open rifts."""
         y, n = "\N{white heavy check mark}", "\N{cross mark}"
         pag = commands.Paginator()
-        for channel_id, _ in self.data.items():
-            ic = int(channel_id)
-            channel = self.bot.get_channel(ic)
 
-            if not channel:
-                pag.add_line(f"{n} {channel_id}")
+        to_tabulate = []
+        for _, info in self.data.items():
+            master = int(info["source"])
+            sub = int(info["target"])
+
+            head = self.bot.get_channel(master)
+            ex = self.bot.get_channel(sub)
+
+            if not all((head, ex)):
+                to_tabulate.append([n, master, sub])
                 continue
 
-            p: discord.Permissions = channel.permissions_for(channel.guild.me)
+            p: discord.Permissions = ex.permissions_for(ex.guild.me)
             if not all([p.read_messages, p.send_messages]):
-                pag.add_line(f"{n} {channel.name} - {channel.guild.id}")
+                to_tabulate.append([n, str(head), str(ex)])
                 continue
             else:
-                pag.add_line(f"{y} {channel.name} - {channel.guild.id}")
+                to_tabulate.append([y, str(head), str(ex)])
 
-        if len(pag.pages) == 0: return await ctx.send("No open rifts.")
+        if len(to_tabulate) == 0:
+            return await ctx.send("No open rifts.")
+        else:
+            tabulated = tabulate.tabulate(to_tabulate, headers=["Working?", "Source", "Target"], tablefmt="pretty")
+            for line in tabulated.splitlines():
+                pag.add_line(line)
         for page in pag.pages:
             await ctx.send(page)
 
@@ -168,7 +187,7 @@ class RiftGun(commands.Cog):
 
     @commands.Cog.listener(name="on_message")
     async def message(self, message: discord.Message):
-        context: commands.Context = await self.bot.get_context(message)
+        context: commands.Context = await self.bot.get_context(message, cls=commands.Context)
         if message.author == self.bot.user:
             return  # only ignore the current bot to prevent loops.
         elif context.valid:
@@ -218,10 +237,12 @@ class RiftGun(commands.Cog):
 
     @commands.command(name="channels")
     async def channels(self, ctx: commands.Context, use_IDs: Optional[bool] = False, *, guild: GuildConverter()):
-        """Lists every channel that is in {guild}."""
+        """Lists every channel that is in {guild}.
+
+        If :use_IDs: is True, this will also list the channel ID next to the name."""
         guild: discord.Guild
         types = {
-            discord.CategoryChannel: ", ",
+            discord.CategoryChannel: "\\ ",
             discord.TextChannel: "#",
             discord.VoiceChannel: "\U0001f508"
         }
@@ -244,36 +265,36 @@ class RiftGun(commands.Cog):
             # to work with >=1.2.5, can't do that sadly.
             await asyncio.sleep(1)
 
-    @commands.command(name="server_info", aliases=['si', 'serverinfo'])
-    async def serverinfo(self, ctx: commands.Context, *, server: GuildConverter()):
-        """Shows you information on a server.
-
-        If this command conflicts with your bot's command, please subclass the cog."""
-        return await ctx.send(embed=self._serverinfo(ctx, server=server))
-
-    def _serverinfo(self, ctx: commands.Context, *, server: discord.Guild):
-        """The alias function for the serverinfo command. Do not override this."""
-        cat = len(server.categories)
-        tex = len(server.text_channels)
-        voi = len(server.voice_channels)
-        emo = f"{len(server.emojis)}/{server.emoji_limit}"
-        reg = str(server.region)
-        afk = humanize.naturaltime(server.afk_timeout)
-        fea = ', '.join(x.lower().replace("_", " ") for x in server.features)
-
-        bo = sum([1 for x in server.members if x.bot])
-        bo = sum([1 for x in server.members if not x.bot])
-        hu = len(server.members)
-
-        e = discord.Embed(
-            title=f"Name: {server}",
-            description=f"**ID:** {server.id}\n**Owner:** {server.owner} (`{server.owner_id}`)\n**Categories:**"
-                        f" {cat}\n**Text:** {tex}\n**Voice:** {voi}\n**Emojis:** {emo}\n**Region:** `{reg}`\n"
-                        f"**Afk Timeout:** {afk}\n**Features:** {fea}\n**Members:** `{bo}` bots, `{hu}` human,"
-                        f" {hu} total",
-            color=server.owner.colour
-        )
-        return e
+    # @commands.command(name="server-info", aliases=['si', 'serverinfo'])
+    # async def serverinfo(self, ctx: commands.Context, *, server: GuildConverter()):
+    #     """Shows you information on a server.
+    #
+    #     If this command conflicts with your bot's command, please subclass the cog."""
+    #     return await ctx.send(embed=self._serverinfo(ctx, server=server))
+    #
+    # def _serverinfo(self, ctx: commands.Context, *, server: discord.Guild):
+    #     """The alias function for the serverinfo command. Do not override this."""
+    #     cat = len(server.categories)
+    #     tex = len(server.text_channels)
+    #     voi = len(server.voice_channels)
+    #     emo = f"{len(server.emojis)}/{server.emoji_limit}"
+    #     reg = str(server.region)
+    #     afk = humanize.naturaltime(server.afk_timeout)
+    #     fea = ', '.join(x.lower().replace("_", " ") for x in server.features)
+    #
+    #     bo = sum([1 for x in server.members if x.bot])
+    #     bo = sum([1 for x in server.members if not x.bot])
+    #     hu = len(server.members)
+    #
+    #     e = discord.Embed(
+    #         title=f"Name: {server}",
+    #         description=f"**ID:** {server.id}\n**Owner:** {server.owner} (`{server.owner_id}`)\n**Categories:**"
+    #                     f" {cat}\n**Text:** {tex}\n**Voice:** {voi}\n**Emojis:** {emo}\n**Region:** `{reg}`\n"
+    #                     f"**Afk Timeout:** {afk}\n**Features:** {fea}\n**Members:** `{bo}` bots, `{hu}` human,"
+    #                     f" {hu} total",
+    #         color=server.owner.colour
+    #     )
+    #     return e
 
     async def cog_command_error(self, ctx, error):
         if os.getenv("RG_EH"):
