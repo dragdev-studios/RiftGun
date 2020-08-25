@@ -47,7 +47,7 @@ class RiftGun(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         if not os.path.exists("./.riftgun"):
-            print("")
+            print("Configuration folder does not exist. Creating...")
             os.mkdir("./.riftgun")
         try:
             with open("./.riftgun/rifts.min.json") as rfile:
@@ -82,8 +82,7 @@ class RiftGun(commands.Cog):
 
     def cog_unload(self):
         self.worker.cancel()
-        with open("./.riftgun/rifts.min.json", "w+") as wfile:
-            json.dump(self.data, wfile)
+        self.save()
         print("Saved data and unloaded module")
 
     def save(self):
@@ -113,6 +112,7 @@ class RiftGun(commands.Cog):
 
         to_tabulate = []
         for _, info in self.data.items():
+            # note to all editors: what the hell is this?
             master = int(info["source"])
             sub = int(info["target"])
 
@@ -168,6 +168,7 @@ class RiftGun(commands.Cog):
 
         This command takes the same arguments as [p]openrift.
         If the bot can no longer see the rift channel, you can provide the ID instead and it will still be deleted"""
+        # TODO: need to make it so you can provide either source or target channel.
         if not isinstance(target, int):
             target: discord.TextChannel
             if notify and target.permissions_for(target.guild.me).send_messages:
@@ -223,14 +224,15 @@ class RiftGun(commands.Cog):
         This should be used to make sure you got the right channel before opening."""
         channel: discord.TextChannel
         nsfw = channel.is_nsfw()
+        news = channel.is_news()
         ago = channel.created_at.strftime("%c") + " " + humanize.naturaltime(channel.created_at)
         perms = channel.permissions_for(channel.guild.me).value
         e = discord.Embed(
             title=f"Name: {channel.name}",
             description="ID: `{0.id}`\nGuild: {0.guild.name} (`{0.guild.id}`)\nCategory: {0.category}\n"
-                        "Slowmode: {0.slowmode_delay}\nNSFW: {1}\nCreated at: {2}\n"
+                        "Slowmode: {0.slowmode_delay}\nNSFW: {1}\nAnnouncement: {5}Created at: {2}\n"
                         "[Permissions Value]({3}): {4}".format(
-                channel, nsfw, ago, f"https://discordapi.com/permissions.html#{perms}", str(perms)),
+                channel, nsfw, ago, f"https://discordapi.com/permissions.html#{perms}", str(perms), news),
             color=channel.guild.owner.color,
             timestamp=channel.created_at
         )
