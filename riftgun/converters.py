@@ -20,6 +20,11 @@ class GlobalTextChannel(GlobalConverter):
         self.sblm = sort_by_last_message
 
     async def convert(self, ctx, argument: str) -> discord.TextChannel:
+        # this method only exists so that you can actually use it as a converter
+        return self.convertSync(ctx, argument)
+
+    @staticmethod
+    def convertSync(ctx, argument: str) -> discord.TextChannel:
         """Converts a provided argument to a text channel."""
         try:
             return await commands.TextChannelConverter().convert(ctx, argument)
@@ -28,35 +33,10 @@ class GlobalTextChannel(GlobalConverter):
 
         if argument.isdigit(): argument = int(argument)
 
-        def match(channel: discord.TextChannel):
+        def match(channel):
             if not isinstance(channel, discord.TextChannel):
+                # ok, so, somehow this is being bypassed and is returning a voice channel. Not sure why.
                 return False
-            if channel.id == argument:
-                return True
-            else:
-                arg = str(argument)
-                if channel.name.lower() == str(arg).lower():
-                    return True
-                elif channel.name in arg:
-                    return True
-                elif arg in channel.name:
-                    return True
-
-        channel = discord.utils.find(match, sorted(list(ctx.bot.get_all_channels()), key=lambda x: x.id))
-
-        if channel:
-            return channel
-        else:
-            raise commands.BadArgument(f"Unable to convert \"{argument}\" to TextChannel, globally or locally.")
-
-    @staticmethod
-    def convertSync(ctx, argument: str) -> discord.TextChannel:
-        """Converts a provided argument to a text channel."""
-        if argument.isdigit(): argument = int(argument)
-
-        def match(channel: discord.TextChannel):
-            if not isinstance(channel, discord.TextChannel):
-                return
             if channel.id == argument:
                 return True
             else:
@@ -77,7 +57,9 @@ class GlobalTextChannel(GlobalConverter):
 
 
 class GuildConverter(GlobalConverter):
-    """Converts a provided guild name/id into a discord.Guild"""
+    """Converts a provided guild name/id into a discord.Guild.
+
+    Feel free to use this in your own projects."""
 
     @staticmethod
     def convertSync(ctx: commands.Context, argument: str):
