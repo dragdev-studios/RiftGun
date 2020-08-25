@@ -3,9 +3,9 @@
 
 ### What is it?
 *RiftGun*, commonly known as "Rifter", is a python module that
-you can load into your discord bots to spy on channels.
+you can load into your discord bots to talk to other channels.
 
-#### I DO NOT CONDONE USE OF THIS FOR PRIVACY INVASION, OR UNETHICAL USES!
+#### WE DO NOT CONDONE USE OF THIS FOR PRIVACY INVASION, OR UNETHICAL USES!
 This module was designed as an easy way for us to remotely provide 
 support and investigate servers that we thought broke DragDev Studios'
 terms of service. While we can't stop you, we advise you don't use this 
@@ -17,6 +17,12 @@ From **git**:
 ```shell script
 $ pip install git+https://github.com/dragdev-studios/riftgun
 ```
+Please remember that the github version is usually more updated, but not guaranteed to be stable.
+
+From **pip**:
+```shell script
+$ pip3 install riftgun
+```
 
 then to load it into the bot, simply add this before `bot.run()`:
 ```python
@@ -26,3 +32,5 @@ bot.load_extension("riftgun")
 When you successfully load the module, the bot will create a file where you are running your bot called `rifts.min.json`.
 If this does not already exist, or is broken, it will be created.
 Otherwise, it will be loaded instead.
+
+Update: The cog will now make a directory @ ``./.riftgun``
