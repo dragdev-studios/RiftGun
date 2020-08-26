@@ -21,15 +21,15 @@ class GlobalTextChannel(GlobalConverter):
 
     async def convert(self, ctx, argument: str) -> discord.TextChannel:
         # this method only exists so that you can actually use it as a converter
+        try:
+            return await commands.TextChannelConverter().convert(ctx, argument)
+        except commands.BadArgument:
+            pass
         return self.convertSync(ctx, argument)
 
     @staticmethod
     def convertSync(ctx, argument: str) -> discord.TextChannel:
         """Converts a provided argument to a text channel."""
-        try:
-            return await commands.TextChannelConverter().convert(ctx, argument)
-        except commands.BadArgument:
-            pass
 
         if argument.isdigit(): argument = int(argument)
 
