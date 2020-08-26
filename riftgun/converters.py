@@ -16,9 +16,6 @@ class GlobalConverter(commands.Converter):
 class GlobalTextChannel(GlobalConverter):
     """A converter that attempts to find the closest match to the provided channel."""
 
-    def __init__(self, *, sort_by_last_message: bool = True):
-        self.sblm = sort_by_last_message
-
     async def convert(self, ctx, argument: str) -> discord.TextChannel:
         # this method only exists so that you can actually use it as a converter
         try:
