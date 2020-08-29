@@ -29,6 +29,7 @@ def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", fi
     file.write("[RiftGun] " + sep.join(str(v) for v in values) + end)
     return ''
 
+
 # def rift_admin(ctx: commands.Context):
 #     if not ctx.guild:
 #         raise commands.NoPrivateMessage()
@@ -39,11 +40,14 @@ def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", fi
 #             return True
 # May come back into use later?
 
+__version__ = '1.0.2'
+
 
 class RiftGun(commands.Cog):
     """Need to see what others are doing and communicate with them? This two-way module is the thing for you!
 
     <https://github.com/dragdev-studios/RiftGun>"""
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         if not os.path.exists("./.riftgun"):
@@ -61,6 +65,7 @@ class RiftGun(commands.Cog):
 
         self.queue = asyncio.Queue(loop=self.bot.loop)
         self.worker = self.bot.loop.create_task(self.queue_sender())
+        self.ver = __version__
 
     async def queue_sender(self):
         # I've got a few questions as to why this queue system even exists.
@@ -269,7 +274,7 @@ class RiftGun(commands.Cog):
             await asyncio.sleep(1)
 
     @commands.command(name="send", aliases=['message'])
-    async def send_message(self, ctx: commands.Context, channel: typing.Union[GlobalTextChannel(), discord.DMChannel],
+    async def send_message(self, ctx: commands.Context, channel: typing.Union[GlobalTextChannel, discord.DMChannel],
                            as_embed: typing.Optional[bool] = False, *, content: str):
         """Sends a message to a specific channel.
 
@@ -284,16 +289,19 @@ class RiftGun(commands.Cog):
             content = ""
         else:
             embed = None
-        if not channel.permissions_for(channel.guild.me).send_messages:
-            return await ctx.send(f"\N{cross mark} Insufficient permissions to message {channel.name}.")
+        # noinspection PyUnresolvedReferences
+        if channel.guild:
+            # noinspection PyUnresolvedReferences
+            if not channel.permissions_for(channel.guild.me).send_messages:
+                # noinspection PyUnresolvedReferences
+                return await ctx.send(f"\N{cross mark} Insufficient permissions to message {channel.name}.")
+        try:
+            await channel.send(content, embed=embed)
+        except Exception as e:
+            return await ctx.send(f"\N{cross mark} {e}")
         else:
-            try:
-                await channel.send(content, embed=embed)
-            except Exception as e:
-                return await ctx.send(f"\N{cross mark} {e}")
-            else:
-                await ctx.message.add_reaction("\N{white heavy check mark}")
-                return await ctx.send(f"Sent: " + content[:1994], embed=embed)
+            await ctx.message.add_reaction("\N{white heavy check mark}")
+            return await ctx.send(f"Sent: " + content[:1994], embed=embed)
 
     async def cog_command_error(self, ctx, error):
         if os.getenv("RG_EH"):

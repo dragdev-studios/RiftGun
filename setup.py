@@ -1,8 +1,10 @@
 from setuptools import setup
 
+from riftgun.cog import __version__
+
 setup(
     name='riftgun',
-    version='1.0.2',
+    version=__version__,
     packages=['riftgun'],
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
