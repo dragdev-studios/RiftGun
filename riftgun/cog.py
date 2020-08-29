@@ -321,4 +321,5 @@ class RiftGun(commands.Cog):
         print(f"Exception raised in command {ctx.command}: {str(error)}\n{exc}", file=sys.stderr)
         print("You can turn these warnings off by setting the environment variable \"RG_EH\" to 0")
         return await ctx.send(f"\N{cross mark} an error was raised, and printed to console. If the issue persists,"
-                              f" please open an issue on github (<https://github.com/dragdev-studios/RiftGun/issues/new>)")
+                              f" please open an issue on github (<https://github.com/dragdev-studios/RiftGun/issues/new>).\n"
+                              f"Your version: {__version__}")
