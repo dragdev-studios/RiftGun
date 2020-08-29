@@ -281,7 +281,7 @@ class RiftGun(commands.Cog):
                 color=ctx.author.color,
                 timestamp=ctx.message.created_at
             )
-            content = None
+            content = ""
         else:
             embed = None
         if not channel.permissions_for(channel.guild.me).send_messages:
@@ -293,7 +293,7 @@ class RiftGun(commands.Cog):
                 return await ctx.send(f"\N{cross mark} {e}")
             else:
                 await ctx.message.add_reaction("\N{white heavy check mark}")
-                return await ctx.send(content, embed=embed)
+                return await ctx.send(f"Sent: " + content[:1994], embed=embed)
 
     async def cog_command_error(self, ctx, error):
         if os.getenv("RG_EH"):
