@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='riftgun',
-    version='1.0.1',
+    version='1.0.2',
     packages=['riftgun'],
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
