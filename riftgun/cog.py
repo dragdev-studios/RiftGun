@@ -269,7 +269,7 @@ class RiftGun(commands.Cog):
             await asyncio.sleep(1)
 
     @commands.command(name="send", aliases=['message'])
-    async def send_message(self, ctx: commands.Context, channel: GlobalTextChannel(),
+    async def send_message(self, ctx: commands.Context, channel: typing.Union[GlobalTextChannel(), discord.DMChannel],
                            as_embed: typing.Optional[bool] = False, *, content: str):
         """Sends a message to a specific channel.
 
