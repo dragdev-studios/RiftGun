@@ -6,15 +6,25 @@ import traceback
 import typing
 from typing import Optional, Union
 
-import discord
-import humanize
-import tabulate
+try:
+    import discord
+except ImportError:
+    raise BaseException("Discord.py is not installed. How are you even loading this?")
+try:
+    import humanize
+except ImportError:
+    raise Exception("Humanize is not installed. Please run \"pip[3] install -r requirements.txt\".")
+try:
+    import tabulate
+except ImportError:
+    raise Exception("Tabulate is not installed. Please run \"pip[3] install -r requirements.txt\".")
+
 from discord.ext import commands
 
 from .converters import GlobalTextChannel, GuildConverter
 
 
-def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", file=sys.stdout,
+def print(*values: object, sep: Optional[str] = " ", end: Optional[str] = "\n", file = sys.stdout,
           flush: bool = False):
     """
     print(value, ..., sep=' ', end='\n', file=sys.stdout, flush=False)
@@ -40,7 +50,7 @@ def print(*values: object, sep: Optional[str]=" ", end: Optional[str] = "\n", fi
 #             return True
 # May come back into use later?
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 
 class RiftGun(commands.Cog):
