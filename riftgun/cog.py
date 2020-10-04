@@ -221,16 +221,16 @@ class RiftGun(commands.Cog):
 
         if sid in sources.keys():
             channel = self.bot.get_channel(sources[sid])
-            attachments = [a.to_file() for a in message.attachments]
             self.queue.put_nowait(channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                                               embed=embeds,
-                                               files=attachments or None))
+                                               embed=embeds))
+            if message.attachments:
+                self.queue.put_nowait(f"*Attachments:*\n{' '.join(x.url for x in message.attachments)}")
         elif sid in targets.keys():
             channel = self.bot.get_channel(targets[sid])
-            attachments = [a.to_file() for a in message.attachments]
             self.queue.put_nowait(channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                                               embed=embeds,
-                                               files=attachments or None))
+                                               embed=embeds))
+            if message.attachments:
+                self.queue.put_nowait(f"*Attachments:*\n{' '.join(x.url for x in message.attachments)}")
 
     @commands.command(name="channelinfo", aliases=['ci', 'chaninfo', 'cinfo'])
     async def channel_info(self, ctx: commands.Context, *, channel: GlobalTextChannel()):
