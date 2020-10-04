@@ -50,7 +50,7 @@ def print(*values: object, sep: Optional[str] = " ", end: Optional[str] = "\n", 
 #             return True
 # May come back into use later?
 
-__version__ = '1.0.3'
+__version__ = '1.1.0'
 
 
 class RiftGun(commands.Cog):
