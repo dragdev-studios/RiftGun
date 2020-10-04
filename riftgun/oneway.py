@@ -26,10 +26,10 @@ class OneWayRiftGun(RiftGun):
 
         if sid in targets.keys():
             channel = self.bot.get_channel(targets[sid])
-            attachments = [a.to_file() for a in message.attachments]
             self.queue.put_nowait(channel.send(f"**{message.author}:** {message.clean_content}"[:2000],
-                                               embed=embeds,
-                                               files=attachments or None))
+                                               embed=embeds))
+            if message.attachments:
+                self.queue.put_nowait(f"*Attachments:*\n{' '.join(x.url for x in message.attachments)}")
 
 
 def setup(bot: commands.Bot):
