@@ -262,7 +262,7 @@ class RiftGun(commands.Cog):
         types = {
             discord.CategoryChannel: "\\ ",
             discord.TextChannel: "#",
-            discord.VoiceChannel: "\U0001f508"
+            discord.VoiceChannel: "\U0001f50a"
         }
         p = commands.Paginator(max_size=2048)
         for category, channels in guild.by_category():
